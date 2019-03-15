@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+
 import com.steelkiwi.cropiwa.AspectRatio;
 
 import com.steelkiwi.cropiwa.CropIwaView;
@@ -46,6 +48,13 @@ public class CropActivity extends AppCompatActivity {
         MaterialPreferenceScreen cropPrefScreen = (MaterialPreferenceScreen) findViewById(R.id.crop_preference_screen);
         configurator = new CropViewConfigurator(cropView, cropPrefScreen);
         cropPrefScreen.setStorageModule(configurator);
+
+        cropView.setImageClickListener(new CropIwaView.ImageClickListener() {
+            @Override
+            public void onImageClickListener() {
+                Toast.makeText(CropActivity.this, "Click", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

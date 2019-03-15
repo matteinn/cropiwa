@@ -339,13 +339,26 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
 
         private ScaleGestureDetector scaleDetector;
         private TranslationGestureListener translationGestureListener;
+        private CropIwaView.ImageClickListener imageClickListener;
+
+        private int CLICK_ACTION_THRESHOLD = 6;
+        private float startX;
+        private float startY;
+        private long startTime;
 
         public GestureProcessor() {
-            scaleDetector = new ScaleGestureDetector(getContext(), new ScaleGestureListener());
-            translationGestureListener = new TranslationGestureListener();
+            this.scaleDetector = new ScaleGestureDetector(getContext(), new ScaleGestureListener());
+            this.translationGestureListener = new TranslationGestureListener();
+        }
+
+        public void setImageClickListener(CropIwaView.ImageClickListener imageClickListener) {
+            this.imageClickListener = imageClickListener;
         }
 
         public void onDown(MotionEvent event) {
+            startX = event.getX();
+            startY = event.getY();
+            startTime = System.currentTimeMillis();
             translationGestureListener.onDown(event);
         }
 
@@ -355,6 +368,12 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
                     return;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
+                    float endX = event.getX();
+                    float endY = event.getY();
+                    long endTime = System.currentTimeMillis();
+                    if (imageClickListener != null && isAClick(startX, endX, startY, endY, startTime, endTime)) {
+                        imageClickListener.onImageClickListener();
+                    }
                     animateToAllowedBounds();
                     return;
             }
@@ -367,6 +386,13 @@ class CropIwaImageView extends ImageView implements OnNewBoundsListener, ConfigC
                 //so - canHandle if scaleDetector.isNotInProgress
                 translationGestureListener.onTouchEvent(event, !scaleDetector.isInProgress());
             }
+        }
+
+        private boolean isAClick(float startX, float endX, float startY, float endY, long startTime, long endTime) {
+            float differenceX = Math.abs(startX - endX);
+            float differenceY = Math.abs(startY - endY);
+            float differenceTime = endTime - startTime;
+            return !(differenceX > CLICK_ACTION_THRESHOLD || differenceY > CLICK_ACTION_THRESHOLD || differenceTime > 200);
         }
     }
 

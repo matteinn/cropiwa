@@ -7,7 +7,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
@@ -42,6 +44,8 @@ public class CropIwaView extends FrameLayout {
 
     private CropIwaResultReceiver cropIwaResultReceiver;
 
+    private ImageClickListener imageClickListener;
+
     public CropIwaView(Context context) {
         super(context);
         init(null);
@@ -66,6 +70,13 @@ public class CropIwaView extends FrameLayout {
     private void init(AttributeSet attrs) {
         imageConfig = CropIwaImageViewConfig.createFromAttributes(getContext(), attrs);
         initImageView();
+
+        imageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("LOL", "LOL");
+            }
+        });
 
         overlayConfig = CropIwaOverlayConfig.createFromAttributes(getContext(), attrs);
         overlayConfig.addConfigChangeListener(new ReInitOverlayOnResizeModeChange());
@@ -208,6 +219,10 @@ public class CropIwaView extends FrameLayout {
         this.cropSaveCompleteListener = cropSaveCompleteListener;
     }
 
+    public void setImageClickListener(ImageClickListener imageClickListener) {
+        gestureDetector.setImageClickListener(imageClickListener);
+    }
+
     private class BitmapLoadListener implements CropIwaBitmapManager.BitmapLoadListener {
 
         @Override
@@ -265,6 +280,10 @@ public class CropIwaView extends FrameLayout {
 
     public interface CropSaveCompleteListener {
         void onCroppedRegionSaved(Uri bitmapUri);
+    }
+
+    public interface ImageClickListener {
+        void onImageClickListener();
     }
 
     public interface ErrorListener {
