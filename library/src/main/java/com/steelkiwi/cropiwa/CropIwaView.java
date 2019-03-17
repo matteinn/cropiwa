@@ -46,6 +46,12 @@ public class CropIwaView extends FrameLayout {
 
     private ImageClickListener imageClickListener;
 
+    // Used for click detection
+    private int CLICK_ACTION_THRESHOLD = 6;
+    private float startX;
+    private float startY;
+    private long startTime;
+
     public CropIwaView(Context context) {
         super(context);
         init(null);
@@ -124,8 +130,19 @@ public class CropIwaView extends FrameLayout {
         //I think this "redundant" if statements improve code readability
         try {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            startX = ev.getX();
+            startY = ev.getY();
+            startTime = System.currentTimeMillis();
             gestureDetector.onDown(ev);
             return false;
+        }
+        if (ev.getAction() == MotionEvent.ACTION_UP) {
+            float endX = ev.getX();
+            float endY = ev.getY();
+            long endTime = System.currentTimeMillis();
+            if (imageClickListener != null && isAClick(startX, endX, startY, endY, startTime, endTime)) {
+                imageClickListener.onImageClickListener();
+            }
         }
         if (overlayView.isResizing() || overlayView.isDraggingCropArea()) {
             return false;
@@ -135,6 +152,13 @@ public class CropIwaView extends FrameLayout {
             //e.printStackTrace();
             return false;
         }
+    }
+
+    private boolean isAClick(float startX, float endX, float startY, float endY, long startTime, long endTime) {
+        float differenceX = Math.abs(startX - endX);
+        float differenceY = Math.abs(startY - endY);
+        float differenceTime = endTime - startTime;
+        return !(differenceX > CLICK_ACTION_THRESHOLD || differenceY > CLICK_ACTION_THRESHOLD || differenceTime > 200);
     }
 
     @Override
@@ -220,7 +244,7 @@ public class CropIwaView extends FrameLayout {
     }
 
     public void setImageClickListener(ImageClickListener imageClickListener) {
-        gestureDetector.setImageClickListener(imageClickListener);
+        this.imageClickListener = imageClickListener;
     }
 
     private class BitmapLoadListener implements CropIwaBitmapManager.BitmapLoadListener {
