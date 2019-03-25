@@ -7,9 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import com.steelkiwi.cropiwa.config.ConfigChangeListener;
@@ -47,7 +45,7 @@ public class CropIwaView extends FrameLayout {
     private ImageClickListener imageClickListener;
 
     // Used for click detection
-    private int CLICK_ACTION_THRESHOLD = 6;
+    private int CLICK_ACTION_THRESHOLD = 20;
     private float startX;
     private float startY;
     private long startTime;
@@ -76,13 +74,6 @@ public class CropIwaView extends FrameLayout {
     private void init(AttributeSet attrs) {
         imageConfig = CropIwaImageViewConfig.createFromAttributes(getContext(), attrs);
         initImageView();
-
-        imageView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("LOL", "LOL");
-            }
-        });
 
         overlayConfig = CropIwaOverlayConfig.createFromAttributes(getContext(), attrs);
         overlayConfig.addConfigChangeListener(new ReInitOverlayOnResizeModeChange());
@@ -158,14 +149,22 @@ public class CropIwaView extends FrameLayout {
         float differenceX = Math.abs(startX - endX);
         float differenceY = Math.abs(startY - endY);
         float differenceTime = endTime - startTime;
-        return !(differenceX > CLICK_ACTION_THRESHOLD || differenceY > CLICK_ACTION_THRESHOLD || differenceTime > 200);
+        return !(differenceX > CLICK_ACTION_THRESHOLD || differenceY > CLICK_ACTION_THRESHOLD || differenceTime > 250);
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent ev) {
         try {
-            gestureDetector.onTouchEvent(event);
-            return super.onTouchEvent(event);
+            gestureDetector.onTouchEvent(ev);
+            if (ev.getAction() == MotionEvent.ACTION_UP) {
+                float endX = ev.getX();
+                float endY = ev.getY();
+                long endTime = System.currentTimeMillis();
+                if (imageClickListener != null && isAClick(startX, endX, startY, endY, startTime, endTime)) {
+                    imageClickListener.onImageClickListener();
+                }
+            }
+            return super.onTouchEvent(ev);
         } catch (IllegalArgumentException e) {
             //e.printStackTrace();
             return false;

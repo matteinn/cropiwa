@@ -52,7 +52,7 @@ public class CropActivity extends AppCompatActivity {
         cropView.setImageClickListener(new CropIwaView.ImageClickListener() {
             @Override
             public void onImageClickListener() {
-                Toast.makeText(CropActivity.this, "Click", Toast.LENGTH_LONG).show();
+                Toast.makeText(CropActivity.this, "Click", Toast.LENGTH_SHORT).show();
             }
         });
     }
